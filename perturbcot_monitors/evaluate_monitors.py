@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from monitor_answer import read_jsonl
+from answer_extraction_v2 import attach_extractions, normalize_numeric_token
 
 
 def wilson(successes: int, total: int, z: float = 1.96) -> dict[str, float | None]:
@@ -178,7 +179,10 @@ def evaluate(
     gold_rows: list[dict[str, Any]],
     generations: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, Any], list[dict[str, Any]]]:
-    gold = {row["original_id"]: str(row["gold_answer"]) for row in gold_rows}
+    gold = {
+        row["original_id"]: normalize_numeric_token(row["gold_answer"])
+        for row in gold_rows
+    }
     evaluated: list[dict[str, Any]] = []
     for row in monitor_rows:
         original_id = row["original_id"]
@@ -300,16 +304,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gold", type=Path, required=True)
     parser.add_argument("--generations", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--extractions", type=Path)
+    parser.add_argument("--require-reviewed", action="store_true")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    generations = read_jsonl(args.generations)
+    extraction_status = {"result_status": "legacy", "pending_reviews": None}
+    if args.extractions:
+        generations, extraction_status = attach_extractions(
+            generations,
+            read_jsonl(args.extractions),
+            require_reviewed=args.require_reviewed,
+        )
+    elif args.require_reviewed:
+        raise ValueError("--require-reviewed requires --extractions")
     evaluated, metrics, audit = evaluate(
         read_jsonl(args.monitor_results),
         read_jsonl(args.gold),
-        read_jsonl(args.generations),
+        generations,
     )
+    metrics["result_status"] = extraction_status["result_status"]
+    metrics["extraction_v2"] = extraction_status if args.extractions else None
     args.output_dir.mkdir(parents=True, exist_ok=True)
     with (args.output_dir / "evaluated_monitor_results.jsonl").open(
         "w", encoding="utf-8"

@@ -3,13 +3,21 @@
 import argparse
 import json
 import math
+import sys
 from collections import Counter, defaultdict
-from decimal import Decimal, InvalidOperation
-from fractions import Fraction
 from pathlib import Path
 
 
 BASE = Path(__file__).resolve().parent
+ROOT = BASE.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from answer_extraction_v2 import (
+    attach_extractions,
+    effective_answer,
+    normalize_numeric_token,
+)
 
 
 def read_jsonl(path):
@@ -22,24 +30,7 @@ def write_json(path, value):
 
 
 def normalize_number(value):
-    if value is None:
-        return None
-    text = str(value).strip().replace("$", "").replace(",", "")
-    percent = text.endswith("%")
-    if percent:
-        text = text[:-1]
-    try:
-        if "/" in text:
-            fraction = Fraction(text)
-            number = Decimal(fraction.numerator) / Decimal(fraction.denominator)
-        else:
-            number = Decimal(text)
-    except (InvalidOperation, ValueError, ZeroDivisionError):
-        return text.lower()
-    normalized = format(number, "f") if number else "0"
-    if "." in normalized:
-        normalized = normalized.rstrip("0").rstrip(".")
-    return normalized + ("%" if percent else "")
+    return normalize_numeric_token(value)
 
 
 def wilson(successes, total, z=1.959963984540054):
@@ -82,9 +73,20 @@ def main():
         default=BASE.parent / "perturbcot_data_prep" / "data" / "offline_eval" / "gold.jsonl",
     )
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--extractions", type=Path)
+    parser.add_argument("--require-reviewed", action="store_true")
     args = parser.parse_args()
 
     generations = read_jsonl(args.generations)
+    extraction_status = {"result_status": "legacy", "pending_reviews": None}
+    if args.extractions:
+        generations, extraction_status = attach_extractions(
+            generations,
+            read_jsonl(args.extractions),
+            require_reviewed=args.require_reviewed,
+        )
+    elif args.require_reviewed:
+        raise ValueError("--require-reviewed requires --extractions")
     gold = {row["original_id"]: normalize_number(row["gold_answer"]) for row in read_jsonl(args.gold)}
     if len(generations) != 450:
         raise ValueError(f"Expected 450 generation rows, got {len(generations)}")
@@ -97,7 +99,7 @@ def main():
 
     evaluated = []
     for row in generations:
-        prediction = normalize_number(row.get("extracted_answer"))
+        prediction = effective_answer(row)
         expected = gold[row["original_id"]]
         evaluated.append({
             **row,
@@ -121,8 +123,9 @@ def main():
     vote_correct = 0
     vote_ties_or_missing = 0
     stochastic_stable = 0
-    answer_monitor_alerts = 0
+    answer_monitor_alerts = answer_monitor_unknowns = 0
     monitor_tp = monitor_fp = monitor_fn = monitor_tn = 0
+    monitor_unknown_positive = monitor_unknown_negative = 0
     variant_matches_original = 0
     variant_comparisons = 0
     group_records = []
@@ -145,9 +148,15 @@ def main():
 
         monitored_rows = [initial, *variant_rows]
         monitored_answers = [row["extracted_answer_normalized"] for row in monitored_rows]
-        alert = None in monitored_answers or len(set(monitored_answers)) > 1
+        unknown = None in monitored_answers
+        alert = not unknown and len(set(monitored_answers)) > 1
         answer_monitor_alerts += int(alert)
-        if alert and not initial["is_correct"]:
+        answer_monitor_unknowns += int(unknown)
+        if unknown and not initial["is_correct"]:
+            monitor_unknown_positive += 1
+        elif unknown:
+            monitor_unknown_negative += 1
+        elif alert and not initial["is_correct"]:
             monitor_tp += 1
         elif alert and initial["is_correct"]:
             monitor_fp += 1
@@ -172,18 +181,21 @@ def main():
             "repeat_majority_answer": vote,
             "repeat_majority_correct": vote is not None and vote == gold[original_id],
             "answer_monitor_alert": alert,
+            "answer_monitor_unknown": unknown,
             "variant_answers": {
                 row["perturbation_type"]: row["extracted_answer_normalized"] for row in variant_rows
             },
         })
 
     status_counts = Counter(row.get("status") for row in evaluated)
-    extraction_success = sum(bool(row.get("answer_extraction_success")) for row in evaluated)
+    extraction_success = sum(row["extracted_answer_normalized"] is not None for row in evaluated)
     truncated = sum(bool(row.get("truncated")) for row in evaluated)
     total_input_tokens = sum(row.get("input_tokens") or 0 for row in evaluated)
     total_output_tokens = sum(row.get("output_tokens") or 0 for row in evaluated)
     total_latency = sum(row.get("latency_seconds") or 0 for row in evaluated)
     summary = {
+        "result_status": extraction_status["result_status"],
+        "extraction_v2": extraction_status if args.extractions else None,
         "records": len(evaluated),
         "unique_run_ids": len(set(run_ids)),
         "unique_originals": len(by_original),
@@ -216,14 +228,17 @@ def main():
             "variant_match_rate": variant_matches_original / variant_comparisons,
             "answer_only_monitor_alert_groups": answer_monitor_alerts,
             "answer_only_monitor_alert_rate": answer_monitor_alerts / len(by_original),
+            "answer_only_monitor_unknown_groups": answer_monitor_unknowns,
             "answer_only_monitor_detection": {
                 "true_positive": monitor_tp,
                 "false_positive": monitor_fp,
                 "false_negative": monitor_fn,
                 "true_negative": monitor_tn,
+                "unknown_positive": monitor_unknown_positive,
+                "unknown_negative": monitor_unknown_negative,
                 "precision": monitor_tp / (monitor_tp + monitor_fp) if monitor_tp + monitor_fp else None,
-                "recall": monitor_tp / (monitor_tp + monitor_fn) if monitor_tp + monitor_fn else None,
-                "false_positive_rate": monitor_fp / (monitor_fp + monitor_tn) if monitor_fp + monitor_tn else None,
+                "recall": monitor_tp / (monitor_tp + monitor_fn + monitor_unknown_positive) if monitor_tp + monitor_fn + monitor_unknown_positive else None,
+                "false_positive_rate": monitor_fp / (monitor_fp + monitor_tn + monitor_unknown_negative) if monitor_fp + monitor_tn + monitor_unknown_negative else None,
             },
         },
         "cost": {
@@ -249,6 +264,7 @@ def main():
     report = f"""# Qwen2.5-Math-1.5B pilot run summary
 
 - Records: {summary['records']} ({summary['unique_originals']} original problems)
+- Result status: {summary['result_status']}
 - Successful answer extraction: {extraction_success}/{len(evaluated)}
 - Truncated generations: {truncated}
 - Original initial accuracy: {baseline_metrics['correct']}/{baseline_metrics['total']} ({baseline_metrics['accuracy']:.1%})
@@ -257,6 +273,7 @@ def main():
 - Original repeat groups with one stable answer: {stochastic_stable}/{len(by_original)} ({stochastic_stable / len(by_original):.1%})
 - Variant answers matching the original initial answer: {variant_matches_original}/{variant_comparisons} ({variant_matches_original / variant_comparisons:.1%})
 - Answer-only monitor alerts: {answer_monitor_alerts}/{len(by_original)} ({answer_monitor_alerts / len(by_original):.1%})
+- Answer-only monitor unknown groups: {answer_monitor_unknowns}/{len(by_original)}
 - Total tokens: {total_input_tokens + total_output_tokens:,} ({total_input_tokens:,} input + {total_output_tokens:,} output)
 - Summed generation latency: {total_latency:.1f} seconds
 

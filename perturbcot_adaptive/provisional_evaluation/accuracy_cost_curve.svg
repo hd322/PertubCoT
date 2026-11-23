@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460">
+<rect width="100%" height="100%" fill="white"/>
+<text x="380.0" y="22" text-anchor="middle" font-family="sans-serif" font-size="16">Sequential risk: accuracy vs extra tokens</text>
+<line x1="75" y1="395" x2="730" y2="395" stroke="#475467"/>
+<line x1="75" y1="35" x2="75" y2="395" stroke="#475467"/>
+<text x="380.0" y="442" text-anchor="middle" font-family="sans-serif" font-size="13">Extra tokens per problem</text>
+<text x="18" y="230.0" text-anchor="middle" transform="rotate(-90 18 230.0)" font-family="sans-serif" font-size="13">Final accuracy</text>
+<polyline points="616.1,305.0 616.1,305.0 622.3,305.0 624.7,260.0 629.3,260.0 646.1,260.0 656.9,215.0 679.5,125.0 679.5,125.0 687.7,125.0 687.7,125.0 690.4,170.0 698.8,125.0" fill="none" stroke="#175cd3" stroke-width="2"/>
+<circle cx="616.1" cy="305.0" r="4" fill="#175cd3"><title>threshold=0.7, accuracy=0.650, tokens/problem=1260.2</title></circle><circle cx="616.1" cy="305.0" r="4" fill="#175cd3"><title>threshold=0.75, accuracy=0.650, tokens/problem=1260.2</title></circle><circle cx="622.3" cy="305.0" r="4" fill="#175cd3"><title>threshold=0.8, accuracy=0.650, tokens/problem=1274.8</title></circle><circle cx="624.7" cy="260.0" r="4" fill="#175cd3"><title>threshold=0.65, accuracy=0.675, tokens/problem=1280.2</title></circle><circle cx="629.3" cy="260.0" r="4" fill="#175cd3"><title>threshold=0.6, accuracy=0.675, tokens/problem=1291.0</title></circle><circle cx="646.1" cy="260.0" r="4" fill="#175cd3"><title>threshold=0.55, accuracy=0.675, tokens/problem=1330.2</title></circle><circle cx="656.9" cy="215.0" r="4" fill="#175cd3"><title>threshold=0.5, accuracy=0.700, tokens/problem=1355.5</title></circle><circle cx="679.5" cy="125.0" r="4" fill="#175cd3"><title>threshold=0.35, accuracy=0.750, tokens/problem=1407.9</title></circle><circle cx="679.5" cy="125.0" r="4" fill="#175cd3"><title>threshold=0.4, accuracy=0.750, tokens/problem=1407.9</title></circle><circle cx="687.7" cy="125.0" r="4" fill="#175cd3"><title>threshold=0.2, accuracy=0.750, tokens/problem=1427.0</title></circle><circle cx="687.7" cy="125.0" r="4" fill="#175cd3"><title>threshold=0.25, accuracy=0.750, tokens/problem=1427.0</title></circle><circle cx="690.4" cy="170.0" r="4" fill="#175cd3"><title>threshold=0.45, accuracy=0.725, tokens/problem=1433.5</title></circle><circle cx="698.8" cy="125.0" r="6" fill="#b42318"><title>threshold=0.3, accuracy=0.750, tokens/problem=1453.0</title></circle>
+<text x="75" y="415" font-family="sans-serif" font-size="11">0</text>
+<text x="730" y="415" text-anchor="end" font-family="sans-serif" font-size="11">1526</text>
+<text x="67" y="395" text-anchor="end" font-family="sans-serif" font-size="11">0.60</text>
+<text x="67" y="39" text-anchor="end" font-family="sans-serif" font-size="11">0.80</text>
+</svg>

@@ -1,0 +1,16 @@
+{
+  "experiment_version": "adaptive_verification_v1",
+  "result_status": "provisional",
+  "extraction_status": {
+    "records": 450,
+    "pending_reviews": 162,
+    "review_status_counts": {
+      "auto_accepted": 288,
+      "pending": 162
+    },
+    "result_status": "provisional"
+  },
+  "groups": 50,
+  "order_feature_rows": 1200,
+  "contains_gold": false
+}

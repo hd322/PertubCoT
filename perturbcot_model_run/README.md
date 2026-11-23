@@ -26,3 +26,12 @@ python evaluate_outputs.py \
   --generations results/generations.jsonl \
   --output-dir results/offline_evaluation
 ```
+
+## 答案抽取 v2
+
+新运行会在每条记录的 `answer_extraction_v2` 字段中同时保存候选答案、证据、
+规则版本、置信度和审核状态。旧的抽取字段继续保留以兼容已有结果。
+
+对历史结果重新抽取时，先在仓库根目录运行 `extract_answers_v2.py`。离线评估可用
+`--extractions` 读取独立的 v2 JSONL；正式指标必须同时使用
+`--require-reviewed`，否则只允许输出标记为 `provisional` 的预览结果。

@@ -1,0 +1,20 @@
+{
+  "answer_only": {
+    "threshold": 0.75,
+    "selection_split": "dev",
+    "budget_fraction_of_always_verify": 1.0,
+    "budget_tolerance_fraction": 0.05
+  },
+  "answer_plus_cot": {
+    "threshold": 0.3,
+    "selection_split": "dev",
+    "budget_fraction_of_always_verify": 1.0,
+    "budget_tolerance_fraction": 0.05
+  },
+  "full": {
+    "threshold": 0.3,
+    "selection_split": "dev",
+    "budget_fraction_of_always_verify": 1.0,
+    "budget_tolerance_fraction": 0.05
+  }
+}

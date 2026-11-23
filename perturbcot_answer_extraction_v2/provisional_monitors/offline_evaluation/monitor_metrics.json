@@ -1,0 +1,298 @@
+{
+  "groups": 50,
+  "split_counts": {
+    "all": 50,
+    "dev": 10,
+    "test": 40
+  },
+  "initial_errors": {
+    "all": 23,
+    "dev": 6,
+    "test": 17
+  },
+  "monitors": {
+    "answer_only": {
+      "all": {
+        "true_positive": 23,
+        "false_positive": 14,
+        "false_negative": 0,
+        "true_negative": 13,
+        "unknown": 0,
+        "unknown_positive": 0,
+        "unknown_negative": 0,
+        "coverage": 1.0,
+        "precision": 0.6216216216216216,
+        "recall": 1.0,
+        "decided_recall": 1.0,
+        "specificity": 0.48148148148148145,
+        "false_positive_rate": 0.5185185185185185,
+        "decided_false_positive_rate": 0.5185185185185185,
+        "recall_wilson_95": {
+          "low": 0.8568788745827374,
+          "high": 1.0000000000000002
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.3398532458621043,
+          "high": 0.6925704935029092
+        }
+      },
+      "dev": {
+        "true_positive": 6,
+        "false_positive": 2,
+        "false_negative": 0,
+        "true_negative": 2,
+        "unknown": 0,
+        "unknown_positive": 0,
+        "unknown_negative": 0,
+        "coverage": 1.0,
+        "precision": 0.75,
+        "recall": 1.0,
+        "decided_recall": 1.0,
+        "specificity": 0.5,
+        "false_positive_rate": 0.5,
+        "decided_false_positive_rate": 0.5,
+        "recall_wilson_95": {
+          "low": 0.6096569663469354,
+          "high": 0.9999999999999999
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.15003570882017148,
+          "high": 0.8499642911798285
+        }
+      },
+      "test": {
+        "true_positive": 17,
+        "false_positive": 12,
+        "false_negative": 0,
+        "true_negative": 11,
+        "unknown": 0,
+        "unknown_positive": 0,
+        "unknown_negative": 0,
+        "coverage": 1.0,
+        "precision": 0.5862068965517241,
+        "recall": 1.0,
+        "decided_recall": 1.0,
+        "specificity": 0.4782608695652174,
+        "false_positive_rate": 0.5217391304347826,
+        "decided_false_positive_rate": 0.5217391304347826,
+        "recall_wilson_95": {
+          "low": 0.8156763396284354,
+          "high": 1.0
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.3296242986421849,
+          "high": 0.7076313046005427
+        }
+      }
+    },
+    "cot_signal_only": {
+      "all": {
+        "true_positive": 4,
+        "false_positive": 0,
+        "false_negative": 9,
+        "true_negative": 17,
+        "unknown": 20,
+        "unknown_positive": 10,
+        "unknown_negative": 10,
+        "coverage": 0.6,
+        "precision": 1.0,
+        "recall": 0.17391304347826086,
+        "decided_recall": 0.3076923076923077,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "decided_false_positive_rate": 0.0,
+        "recall_wilson_95": {
+          "low": 0.06978540350612772,
+          "high": 0.37138054785295666
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 6.938893903907228e-18,
+          "high": 0.12455903714463581
+        }
+      },
+      "dev": {
+        "true_positive": 3,
+        "false_positive": 0,
+        "false_negative": 3,
+        "true_negative": 3,
+        "unknown": 1,
+        "unknown_positive": 0,
+        "unknown_negative": 1,
+        "coverage": 0.9,
+        "precision": 1.0,
+        "recall": 0.5,
+        "decided_recall": 0.5,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "decided_false_positive_rate": 0.0,
+        "recall_wilson_95": {
+          "low": 0.18761280689940868,
+          "high": 0.8123871931005913
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.0,
+          "high": 0.48990002040399916
+        }
+      },
+      "test": {
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 6,
+        "true_negative": 14,
+        "unknown": 19,
+        "unknown_positive": 10,
+        "unknown_negative": 9,
+        "coverage": 0.525,
+        "precision": 1.0,
+        "recall": 0.058823529411764705,
+        "decided_recall": 0.14285714285714285,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "decided_false_positive_rate": 0.0,
+        "recall_wilson_95": {
+          "low": 0.01046013064516424,
+          "high": 0.269825452035628
+        },
+        "false_positive_rate_wilson_95": {
+          "low": -1.3877787807814457e-17,
+          "high": 0.14312112541726274
+        }
+      }
+    },
+    "answer_plus_cot": {
+      "all": {
+        "true_positive": 23,
+        "false_positive": 14,
+        "false_negative": 0,
+        "true_negative": 8,
+        "unknown": 5,
+        "unknown_positive": 0,
+        "unknown_negative": 5,
+        "coverage": 0.9,
+        "precision": 0.6216216216216216,
+        "recall": 1.0,
+        "decided_recall": 1.0,
+        "specificity": 0.36363636363636365,
+        "false_positive_rate": 0.5185185185185185,
+        "decided_false_positive_rate": 0.6363636363636364,
+        "recall_wilson_95": {
+          "low": 0.8568788745827374,
+          "high": 1.0000000000000002
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.3398532458621043,
+          "high": 0.6925704935029092
+        }
+      },
+      "dev": {
+        "true_positive": 6,
+        "false_positive": 2,
+        "false_negative": 0,
+        "true_negative": 1,
+        "unknown": 1,
+        "unknown_positive": 0,
+        "unknown_negative": 1,
+        "coverage": 0.9,
+        "precision": 0.75,
+        "recall": 1.0,
+        "decided_recall": 1.0,
+        "specificity": 0.3333333333333333,
+        "false_positive_rate": 0.5,
+        "decided_false_positive_rate": 0.6666666666666666,
+        "recall_wilson_95": {
+          "low": 0.6096569663469354,
+          "high": 0.9999999999999999
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.15003570882017148,
+          "high": 0.8499642911798285
+        }
+      },
+      "test": {
+        "true_positive": 17,
+        "false_positive": 12,
+        "false_negative": 0,
+        "true_negative": 7,
+        "unknown": 4,
+        "unknown_positive": 0,
+        "unknown_negative": 4,
+        "coverage": 0.9,
+        "precision": 0.5862068965517241,
+        "recall": 1.0,
+        "decided_recall": 1.0,
+        "specificity": 0.3684210526315789,
+        "false_positive_rate": 0.5217391304347826,
+        "decided_false_positive_rate": 0.631578947368421,
+        "recall_wilson_95": {
+          "low": 0.8156763396284354,
+          "high": 1.0
+        },
+        "false_positive_rate_wilson_95": {
+          "low": 0.3296242986421849,
+          "high": 0.7076313046005427
+        }
+      }
+    }
+  },
+  "incremental_cot_signal": {
+    "cot_only_alerts": 0,
+    "cot_only_alert_ids": [],
+    "additional_true_positives": 0,
+    "additional_false_positives": 0
+  },
+  "case_sets": {
+    "answer_monitor_success": [
+      "gsm8k_test_0028",
+      "gsm8k_test_0046",
+      "gsm8k_test_0101",
+      "gsm8k_test_0246",
+      "gsm8k_test_0303",
+      "gsm8k_test_0336",
+      "gsm8k_test_0340",
+      "gsm8k_test_0493",
+      "gsm8k_test_0494",
+      "gsm8k_test_0526",
+      "gsm8k_test_0577",
+      "gsm8k_test_0750",
+      "gsm8k_test_0812",
+      "gsm8k_test_0813",
+      "gsm8k_test_0956",
+      "gsm8k_test_0959",
+      "gsm8k_test_1056",
+      "gsm8k_test_1070",
+      "gsm8k_test_1158",
+      "gsm8k_test_1182",
+      "gsm8k_test_1249",
+      "gsm8k_test_1272",
+      "gsm8k_test_1286"
+    ],
+    "cot_additional_useful": [],
+    "answer_disagreement_but_initial_correct": [
+      "gsm8k_test_0026",
+      "gsm8k_test_0029",
+      "gsm8k_test_0073",
+      "gsm8k_test_0203",
+      "gsm8k_test_0470",
+      "gsm8k_test_0478",
+      "gsm8k_test_0524",
+      "gsm8k_test_0631",
+      "gsm8k_test_0679",
+      "gsm8k_test_0776",
+      "gsm8k_test_0811",
+      "gsm8k_test_0979",
+      "gsm8k_test_1017",
+      "gsm8k_test_1059"
+    ],
+    "all_answers_consistent_but_initial_wrong": []
+  },
+  "result_status": "provisional",
+  "extraction_v2": {
+    "records": 450,
+    "pending_reviews": 162,
+    "review_status_counts": {
+      "auto_accepted": 288,
+      "pending": 162
+    },
+    "result_status": "provisional"
+  }
+}

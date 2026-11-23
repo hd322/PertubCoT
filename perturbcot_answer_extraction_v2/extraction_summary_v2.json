@@ -1,0 +1,26 @@
+{
+  "records": 450,
+  "review_required": 162,
+  "result_status": "provisional",
+  "method_counts": {
+    "answer_statement": 8,
+    "boxed": 90,
+    "conclusion_equation": 22,
+    "conclusion_number": 98,
+    "final_answer": 192,
+    "hash_answer": 20,
+    "last_equation_rhs": 16,
+    "last_number_fallback": 3,
+    "not_found": 1
+  },
+  "confidence_counts": {
+    "high": 298,
+    "low": 19,
+    "medium": 132,
+    "none": 1
+  },
+  "review_status_counts": {
+    "auto_accepted": 288,
+    "pending": 162
+  }
+}

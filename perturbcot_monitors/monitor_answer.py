@@ -9,10 +9,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections import defaultdict
-from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterable
+
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from answer_extraction_v2 import (
+    attach_extractions,
+    effective_answer,
+    normalize_numeric_token,
+)
 
 
 EXPECTED_PERTURBATIONS = (
@@ -36,19 +48,8 @@ def write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
 
 
 def normalize_answer(value: Any) -> str | None:
-    """Normalize a numeric answer while preserving nonnumeric fallbacks."""
-    if value is None:
-        return None
-    text = str(value).strip().replace(",", "").replace("$", "")
-    if not text:
-        return None
-    try:
-        number = Decimal(text)
-    except InvalidOperation:
-        return " ".join(text.lower().split())
-    if number == number.to_integral():
-        return str(number.quantize(Decimal("1")))
-    return format(number.normalize(), "f")
+    """Normalize a numeric answer with the shared v2 rules."""
+    return normalize_numeric_token(value)
 
 
 def select_monitor_rows(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
@@ -80,12 +81,19 @@ def monitor_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
     answers: dict[str, str | None] = {}
     raw_answers: dict[str, Any] = {}
     run_ids: dict[str, str | None] = {}
+    review_statuses: dict[str, str | None] = {}
     failed_versions: list[str] = []
     for version, row in version_rows:
         run_ids[version] = row.get("run_id") if row else None
-        raw = row.get("extracted_answer") if row else None
+        extraction = row.get("answer_extraction_v2") if row else None
+        raw = (
+            extraction.get("answer_raw")
+            if extraction is not None
+            else row.get("extracted_answer") if row else None
+        )
         raw_answers[version] = raw
-        answers[version] = normalize_answer(raw)
+        answers[version] = effective_answer(row) if row else None
+        review_statuses[version] = extraction.get("review_status") if extraction else None
         if row is None or row.get("status") != "ok" or answers[version] is None:
             failed_versions.append(version)
 
@@ -114,6 +122,7 @@ def monitor_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "raw_answers": raw_answers,
         "distinct_answers": distinct,
         "run_ids": run_ids,
+        "review_statuses": review_statuses,
         "missing_versions": sorted(set(missing_versions)),
         "failed_versions": sorted(set(failed_versions)),
     }
@@ -131,18 +140,38 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--generations", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--extractions", type=Path)
+    parser.add_argument("--require-reviewed", action="store_true")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     rows = read_jsonl(args.generations)
+    extraction_status = {"result_status": "legacy", "pending_reviews": None}
+    if args.extractions:
+        rows, extraction_status = attach_extractions(
+            rows,
+            read_jsonl(args.extractions),
+            require_reviewed=args.require_reviewed,
+        )
+    elif args.require_reviewed:
+        raise ValueError("--require-reviewed requires --extractions")
     results = run_answer_monitor(rows)
     write_jsonl(args.output, results)
     counts: dict[str, int] = defaultdict(int)
     for result in results:
         counts[result["decision"]] += 1
-    print(json.dumps({"groups": len(results), "decision_counts": counts}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "groups": len(results),
+                "decision_counts": counts,
+                "extraction_status": extraction_status,
+            },
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":

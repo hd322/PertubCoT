@@ -49,6 +49,37 @@ class MonitorTests(unittest.TestCase):
             )
         self.assertEqual(monitor_group(rows)["decision"], "alert")
 
+    def test_missing_extracted_answer_is_unknown(self):
+        rows = [
+            {
+                "original_id": "x",
+                "split": "test",
+                "run_id": "o",
+                "run_kind": "original_initial",
+                "perturbation_type": None,
+                "status": "ok",
+                "extracted_answer": "10",
+            }
+        ]
+        for name in (
+            "entity_rename",
+            "format_change",
+            "irrelevant_information",
+            "paraphrase",
+        ):
+            rows.append(
+                {
+                    "original_id": "x",
+                    "split": "test",
+                    "run_id": name,
+                    "run_kind": "variant_initial",
+                    "perturbation_type": name,
+                    "status": "ok",
+                    "extracted_answer": None if name == "format_change" else "10",
+                }
+            )
+        self.assertEqual(monitor_group(rows)["decision"], "unknown")
+
     def test_equation_extraction_and_arithmetic(self):
         equations = extract_equations("Cost: 3 * $16.50 = $49.50")
         self.assertEqual(len(equations), 1)

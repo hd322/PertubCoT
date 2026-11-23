@@ -6,6 +6,7 @@ import json
 import os
 import platform
 import re
+import sys
 import time
 from collections import Counter
 from datetime import datetime, timezone
@@ -14,6 +15,12 @@ from fractions import Fraction
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
+ROOT = BASE.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from answer_extraction_v2 import extract_answer_v2
+
 NUMBER = r"[-+]?\$?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:/\d+)?%?"
 
 
@@ -216,6 +223,16 @@ def main():
             output_ids = generated[0, input_ids.shape[1]:]
             output = tokenizer.decode(output_ids, skip_special_tokens=True)
             raw_answer, normalized_answer, extraction_method = extract_answer(output)
+            truncated = int(output_ids.shape[0]) >= cfg["max_new_tokens"] and (
+                output_ids[-1].item() != tokenizer.eos_token_id
+                if output_ids.numel()
+                else False
+            )
+            extraction_v2 = extract_answer_v2(
+                output,
+                truncated=truncated,
+                legacy_method=extraction_method,
+            )
             record.update({
                 "status": "ok",
                 "raw_output": output,
@@ -227,7 +244,8 @@ def main():
                 "output_tokens": int(output_ids.shape[0]),
                 "latency_seconds": latency,
                 "tokens_per_second": float(output_ids.shape[0] / latency) if latency else None,
-                "truncated": int(output_ids.shape[0]) >= cfg["max_new_tokens"] and (output_ids[-1].item() != tokenizer.eos_token_id if output_ids.numel() else False),
+                "truncated": truncated,
+                "answer_extraction_v2": extraction_v2,
                 "error_type": None,
                 "error_message": None,
             })
@@ -238,6 +256,7 @@ def main():
                 "answer_extraction_success": False, "input_tokens": None,
                 "output_tokens": None, "latency_seconds": None, "tokens_per_second": None,
                 "truncated": None, "error_type": type(exc).__name__, "error_message": str(exc),
+                "answer_extraction_v2": extract_answer_v2(""),
             })
         record["finished_at"] = utc_now()
         append_record(results_path, record)

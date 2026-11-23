@@ -15,20 +15,30 @@
 ```bash
 python monitor_answer.py \
   --generations ../perturbcot_qwen25_math_15b_results/merged-results/generations.jsonl \
+  --extractions ../perturbcot_answer_extraction_v2/resolved_extractions_v2.jsonl \
+  --require-reviewed \
   --output results/answer_monitor.jsonl
 
 python monitor_cot.py \
   --generations ../perturbcot_qwen25_math_15b_results/merged-results/generations.jsonl \
+  --extractions ../perturbcot_answer_extraction_v2/resolved_extractions_v2.jsonl \
+  --require-reviewed \
   --output-dir results/runtime
 
 python evaluate_monitors.py \
   --monitor-results results/runtime/monitor_results.jsonl \
   --gold ../perturbcot_data_prep/data/offline_eval/gold.jsonl \
   --generations ../perturbcot_qwen25_math_15b_results/merged-results/generations.jsonl \
+  --extractions ../perturbcot_answer_extraction_v2/resolved_extractions_v2.jsonl \
+  --require-reviewed \
   --output-dir results/offline_evaluation
 
 python test_monitors.py
 ```
+
+省略 `--require-reviewed` 时可以使用尚未完成盲审的 v2 候选，但输出会明确标记为
+`provisional`。答案缺失或人工判定为 `unresolved` 时，答案监控返回 `unknown`，
+不会把抽取失败当作答案不一致报警。
 
 ## 第一版结果
 

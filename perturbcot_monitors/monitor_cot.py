@@ -18,7 +18,7 @@ import time
 from collections import Counter, defaultdict
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from monitor_answer import (
     EXPECTED_PERTURBATIONS,
@@ -27,6 +27,7 @@ from monitor_answer import (
     select_monitor_rows,
     write_jsonl,
 )
+from answer_extraction_v2 import attach_extractions
 
 
 NUMBER_RE = re.compile(r"(?<![A-Za-z])[-+]?\$?\d[\d,]*(?:\.\d+)?%?")
@@ -423,13 +424,25 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--generations", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--extractions", type=Path)
+    parser.add_argument("--require-reviewed", action="store_true")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     rows = read_jsonl(args.generations)
+    extraction_status = {"result_status": "legacy", "pending_reviews": None}
+    if args.extractions:
+        rows, extraction_status = attach_extractions(
+            rows,
+            read_jsonl(args.extractions),
+            require_reviewed=args.require_reviewed,
+        )
+    elif args.require_reviewed:
+        raise ValueError("--require-reviewed requires --extractions")
     results, summary = run_cot_monitor(rows)
+    summary["extraction_status"] = extraction_status
     args.output_dir.mkdir(parents=True, exist_ok=True)
     write_jsonl(args.output_dir / "monitor_results.jsonl", results)
     write_jsonl(
